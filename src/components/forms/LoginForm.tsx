@@ -4,6 +4,7 @@ import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from 'yup';
 
 import { login } from "../../services/authService";
+import { AxiosResponse } from "axios";
 
 
 //definir el esquema de validacion con Yup
@@ -30,9 +31,21 @@ const loginForm = () => {
             <Formik initialValues = {initialCredentials}
             validationSchema= {loginScheme}
             onSubmit= { async(values)=>{
-                await new Promise((response)=> setTimeout(response, 2000));
-                alert(JSON.stringify(values, null,2));
-                console.table(values);
+                
+                login( values.email, values.password).then((response: AxiosResponse)=> {
+                    if(response.status === 200){
+                        if(response.data.token){
+                            sessionStorage.setItem('sessionToken', response.data.token)
+                        }else{
+                            throw new Error('Invalid token')
+                        }
+
+                    } else{
+                        throw new Error('Invalid credentials')
+                    }
+                }).catch((error) => {
+                    console.log("[LOGIN ERROR] Something went wrong")
+                })
             }}>
 
             {
